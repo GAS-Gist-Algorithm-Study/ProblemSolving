@@ -3,7 +3,7 @@
 
 using namespace std;
 
-
+int troll = [10]={0,};
 bool adj[1001][1001];
 bool visited[1001];
 int N, M, V;
