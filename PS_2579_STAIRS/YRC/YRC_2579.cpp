@@ -5,8 +5,8 @@ using namespace std;
 int N;
 int stepscore[301][301];
 
-int cal[301];
-
+int cal1[301];
+int cal2[301];
 
 int score(int n){
   if(n==0)
