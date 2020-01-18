@@ -59,9 +59,6 @@ void move(int dir) {
 }
 
 void roll(int dir) {
-  // TODO: rotate 으로 리펙토링하기!
-  assert(diceX[1] == diceY[1]);
-
   int temp = 0;
   switch (dir) {
   case 1: // east
@@ -130,7 +127,6 @@ void solve() {
   }
 }
 
-
 void input() {
   cin >> N >> M >> y >> x >> K;
 
@@ -143,9 +139,7 @@ void input() {
     cin >> order[i];
 }
 
-
 void output() {
   for (int n: ans)
     cout << n << endl;
 }
-
