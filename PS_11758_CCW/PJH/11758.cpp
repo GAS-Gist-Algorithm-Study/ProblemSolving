@@ -3,16 +3,32 @@
 
 using namespace std;
 
+struct Point 
+{
+  int x, y;
+
+  Point operator -(const Point &P) const 
+  {
+    return { x - P.x, y - P.y };
+  }
+};
+
+int CCW(Point a, Point b, Point c)
+{
+  Point ab = b - a;
+  Point bc = c - b;
+
+  return ab.x * bc.y - ab.y * bc.x;
+}
+
 int main(void) 
 {
-  int x1, x2, x3, y1, y2, y3;
+  Point pts[3];
 
-  cin >> x1 >> y1;
-  cin >> x2 >> y2;
-  cin >> x3 >> y3;
+  for (int i = 0; i < 3; i++)
+    cin >> pts[i].x >> pts[i].y;
 
-  int ccw = ((x1 * y2 + x2 * y3 + x3 * y1) 
-      - (x2 * y1 + x3 * y2 + x1 * y3));
+  int ccw = CCW(pts[0], pts[1], pts[2]);
 
   if (ccw > 0)
     cout << 1;
