@@ -1,28 +1,14 @@
 #include <cstdio>
-#include <algorithm>
+#include <utility>
 using namespace std;
 
-typedef pair<int,int> pii;
-
-pii operator -(const pii &a, const pii &b) {
-	return {a.first - b.first, a.second - b.second};
-}
-
-int ccw(pii a, pii b){
-	return a.first * b.second - a.second * b.first;
-}
-
-int ccw(pii a, pii b, pii c){
-	return ccw(b - a, c - a);
-}
-
 int main(){
-	pii p[3];
+	pair <int,int> p[3];
 	for(int i=0; i<3; i++)
 		scanf("%d %d", &p[i].first, &p[i].second);
 	
-	int ans = ccw(p[0], p[1], p[2]);
-	if(ans > 0) printf("1");
-	else if(ans < 0) printf("-1");
+	pair <int,int> vec[2] = {{p[0].first - p[1].first, p[0].second - p[1].second}, {p[2].first - p[1].first, p[2].second - p[1].second}};
+	if(vec[0].first * vec[1].second - vec[0].second * vec[1].first < 0) printf("1");
+	else if(vec[0].first * vec[1].second - vec[0].second * vec[1].first > 0) printf("-1");
 	else printf("0");
 }
