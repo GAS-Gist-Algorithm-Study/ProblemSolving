@@ -1,5 +1,4 @@
 #include <iostream>
-#define pii pair<int, int>
 
 using namespace std;
 
