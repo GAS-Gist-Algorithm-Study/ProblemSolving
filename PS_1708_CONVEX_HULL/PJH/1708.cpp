@@ -4,6 +4,31 @@
 
 using namespace std;
 
+struct point; 
+
+long long ccw(point ab, point bc);
+long long ccw(point a, point b, point c);
+long long ccw(point* a, point* b, point* c);
+
+void preprocess(vector<point>& pts, vector<point*>& hull);
+void getInput(int& N, vector<point>& pts);
+void findHull(int N, vector<point>& pts, vector<point*>& hull, int i);
+void printHull(vector<point*> hull);
+
+int main(void)
+{
+  int N;
+  vector<point> pts;
+  vector<point*> hull;
+
+  getInput(N, pts);
+  preprocess(pts, hull);
+  findHull(N, pts, hull, 2);
+ 
+  cout << hull.size() - 1 << endl;
+  return 0;
+}
+
 struct point 
 {
   long long x, y;
@@ -17,32 +42,40 @@ struct point
   { return (x == a.x) ? y < a.y : x < a.x; }
 };
 
-long long ccw(point ab, point bc)
-{ return ab.x * bc.y - ab.y * bc.x; }
-
-long long ccw(point a, point b, point c) 
-{ return ccw(b - a, c - b); }
-
-void findHull(int N, vector<point>& pts, vector<point*>& hull)
+void findHull(int N, vector<point>& pts, vector<point*>& hull, int target)
 {
-  int last = 1;
-  int i = 2;
+  if (target > N)
+    return;
 
-  while (i <= N) {
-    while (last > 0 && ccw(*hull[last - 1], *hull[last], pts[i]) <= 0) {
-      hull.pop_back();
-      last--;
-    }
-    hull.push_back(&pts[i++]);
-    last++;
-  }
+  /*
+   * If you get the hull right, ccw with a line and pts[target]
+   * should always be larger than 0.
+   */
+  while (hull.size() > 1 && 
+      ccw(*hull[hull.size() - 2], *hull[hull.size() - 1], pts[target]) <= 0)
+    hull.pop_back();
+
+  hull.push_back(&pts[target]);
+  findHull(N, pts, hull, target + 1);
+}
+
+void printHull(vector<point*> hull)
+{
+  for (auto pp: hull)
+    cout << pp-> x << " " << pp->y << endl;
 }
 
 void preprocess(vector<point>& pts, vector<point*>& hull)
 {
-  point minPoint = *min_element(pts.begin(), pts.end());
+  /*
+   * Sorting by the distance from the minimum point beforehand
+   * is crucial, since you want to check the closer points 
+   * when some points are on the same line from the minimium point.
+   */
+  sort(pts.begin(), pts.end());
+  point minPoint = pts[0];
 
-  sort(pts.begin(), pts.end()
+  stable_sort(pts.begin(), pts.end()
       , [&minPoint](point a, point b) { 
         point ma = a - minPoint;
         point mb = b - minPoint;
@@ -65,16 +98,11 @@ void getInput(int& N, vector<point>& pts)
   }
 }
 
-int main(void)
-{
-  int N;
-  vector<point> pts;
-  vector<point*> hull;
+long long ccw(point ab, point bc)
+{ return ab.x * bc.y - ab.y * bc.x; }
 
-  getInput(N, pts);
-  preprocess(pts, hull);
-  findHull(N, pts, hull);
- 
-  cout << hull.size() - 1 << endl;
-  return 0;
-}
+long long ccw(point a, point b, point c) 
+{ return ccw(b - a, c - b); }
+
+long long ccw(point* a, point* b, point* c) 
+{ return ccw(*b - *a, *c - *b); }
