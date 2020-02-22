@@ -52,7 +52,7 @@ void findHull(int N, vector<point>& pts, vector<point*>& hull, int target)
    * should always be larger than 0.
    */
   while (hull.size() > 1 && 
-      ccw(*hull[hull.size() - 2], *hull[hull.size() - 1], pts[target]) <= 0)
+      ccw(hull[hull.size() - 2], hull[hull.size() - 1], &pts[target]) <= 0)
     hull.pop_back();
 
   hull.push_back(&pts[target]);
