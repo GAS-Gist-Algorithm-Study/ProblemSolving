@@ -4,8 +4,6 @@
 
 using namespace std;
 
-bool visited[100001];
-
 struct point 
 {
   long long x, y;
