@@ -5,7 +5,9 @@
 using namespace std;
 
 struct Point{
-    int x,y;
+    long long x,y;
+    // Point(long long a, long long b) : x(a), y(b) {}
+
     Point operator-(const Point &A) const{
         return {x-A.x,y-A.y};
     }
@@ -16,14 +18,14 @@ bool comparePoint(Point p1, Point p2){
     return (p1.x < p2.x);
 }
 
+// ruturn{( x==a.x ) ? y < a.y : x < a.x; trhee hang 
+
 bool compareSlope(Point p1, Point p2){
-    float slope_p1 = (float)p1.y/p1.x;
-    float slope_p2 = (float)p2.y/p2.x;
-    if(slope_p1==slope_p2) return (p1.x < p2.x);
-    return ( slope_p1< slope_p2 );
+    if(p1.y*p2.x==p1.x*p2.y) return (p1.x < p2.x);
+    return ( p1.y*p2.x < p1.x*p2.y );
 }
 
-int CCW(Point a, Point b, Point c){
+long long CCW(Point a, Point b, Point c){
     Point ab = b-a;
     Point bc = c-b;
     return ab.x*bc.y - ab.y*bc.x;
@@ -34,7 +36,6 @@ int main(void){
     cin >> N;
    
     vector<Point> points;
-    int min_x, min_y;
     for(int i=0;i<N;i++){
         Point p;
         cin >> p.x >> p.y;
@@ -59,33 +60,39 @@ int main(void){
         origin_points.emplace_back(tmp);
     }
     sort(origin_points.begin(),origin_points.end(),compareSlope);
+    
     if(ultimate_slope)
         origin_points.emplace_back(ultimate_point);
+    origin_points.emplace_back(origin);
+
     stack<Point> st_points;
     st_points.emplace(origin);
     st_points.emplace(origin_points[0]);
     int k = 1;
-    while( k < origin_points.size()){
+
+    while( k < origin_points.size() ){
         Point a,b,c;
         b = st_points.top();
         st_points.pop();
         a = st_points.top();
         c = origin_points[k];
+       
         if( CCW(a,b,c) == 0 ) {
             st_points.emplace(c);
             k++;
         }
+       
         else if(CCW(a,b,c) > 0){
             st_points.emplace(b);
             st_points.emplace(c);
             k++;
         }
     }
-    cout << st_points.size() << endl;
+     
+    cout << st_points.size()-1 << endl;
     while(!st_points.empty()){
         Point p = st_points.top();
         st_points.pop();
-        cout << p.x << " " << p.y << endl;
+        // cout << p.x << " " << p.y << endl;
     }
-    
 }
