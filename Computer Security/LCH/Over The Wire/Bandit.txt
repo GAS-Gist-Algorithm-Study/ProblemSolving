@@ -1,0 +1,320 @@
+Over the wire - bandit
+
+준비물 : Cygwin (Windows 운영체제에서 Linux처럼 쓰기 위한 프로그램? 대충 그런느낌)
+
+준비가 됐다면 ssh bandit.labs.overthewire.org –l bandit0 –p 2220를 치고
+비밀번호로 bandit0을 입력한다!
+
+bandit0
+단순하다. cat readme로 비밀번호를 읽어주자.
+
+bandit1
+파일 이름이 –라서 cat –를 하는 순간 –를 통해 추가 명령어를 받아들이려고 하기 때문에 cat을 쓸 수 없다.
+따라서 cat ./-로 path를 지정해서 실행하자.
+
+bandit2
+파일 이름에 공백이 존재한다.
+사실 cat 뒤에 tab을 치면 이 디렉터리에는 파일이 하나밖에 없어서 바로 파일명이 입력된다.
+
+보니까 spaces\ in\ this\ filename처럼 백슬래시 뒤에 스페이스바를 통해 파일명에 있는 공백을 표현한다. “\n”, “\t”처럼 “\ ”도 있나보다.
+
+여튼 cat spaces\ in\ this\ filename로 비밀번호를 확인하자.
+
+bandit3
+처음에 inhere라는 디렉토리가 있어서 그쪽으로 들어가봤다.
+하지만 ls로 확인해봤더니 아무 파일도 없길래 당황했지만, ls –al로 검색하니 .hidden이란 파일이 존재했다. 
+그래서 cat .hidden으로 비밀번호를 확인하자.
+
+bandit4
+이제 슬슬 inhere 디렉토리에 혼란을 주기 위한 쓸데없는 파일들이 많아지기 시작했다.
+숨겨진 디렉토리도 없고, -file00부터 –file09까지 10개의 파일 뿐이라.. 많이 귀여웠다 ㅎㅎ
+우리에게는 Brute Force라는 강력한 기법이 있으므로 
+find . -type f -exec cat {} \;
+를 입력해서 모든 파일에 대해 cat을 실행해보면 10개의 줄 사이에 비밀번호 한 줄이 뜰 것이다.
+
+bandit5
+inhere를 들어갔더니.. maybehere 폴더들이 넘쳐난다.
+find . 만 실행했는데 엄청나게 많은 파일들이 있기에 함부로 Brute Force를 할 수도 없는 상황이다. 당황하지 않고 단서를 잘 살펴보면 1033byte, human-readable이므로
+find . -type f –size 1033c –exec ls -al {} \;
+를 입력했더니 정말 다행히도 한 개의 파일만 검색되었다.
+그 디렉토리에 그대로 들어가서 cat해주면 된다.
+
+bandit6
+힌트에 서버 어딘가에 패스워드가 존재한다고 한다.
+일단 inhere에 들어가보니 웬걸? 아무 파일도 존재하지 않았다...
+당황하지 않고 서버 어딘가랬으니 일단 최상위 폴더로 쭉 cd ..을 눌러준다
+다음 user 권한이 bandit7, group 권한이 bandit6이랬으니
+find . -user bandit7 –group bandit6 –size 33
+으로 나오는 파일을 cat해주자.
+
+bandit7
+millionth라는 단어 옆에 비밀번호가 있다고 한다.
+ls –al을 해보니 data.txt가 400만 바이트가 넘어가는 것을 보고 눈으로 구별하는 방법은 포기했다. txt 파일 내에 특정 문자열을 찾는 명령어는 grep이니
+grep millionth data.txt를 통해 찾아주자.
+
+bandit8
+역시 data.txt가 있고, 엄청난 수의 비밀번호 후보군들이 있었다.
+중복되지 않는 단 한 줄을 찾아야 하니까 uniq 명령어를 사용할 수 있다.
+cat data.txt | sort | uniq –u를 통해 비밀번호를 찾아주자.
+sort를 안쓰니까 uniq가 중복되는 줄을 못찾더라. 꼭 sort 해주자.
+(-u option은 중복되지 않는 줄만 출력한다. 그냥 uniq는 중복제거 후 출력이니 엄청나게 많은 줄을 중복하지 않게 출력하더라. P.S –d는 중복이 일어나는 줄만 출력)
+bandit9
+또 data.txt이다. password 앞에 “=”이 여러 개 붙어있다는 단서로 찾기 전에, human-readable에 집중해보자. 지금은 cat data.txt를 하더라도 binary file이라면서 아예 텍스트 파일 자체가 열리지 않았다. 뒤에 | grep “=” -a를 붙여도 여전히 제대로 파일이 출력되지 않는 문제가 있었다.
+그래서 새로 찾아낸 명령어가 strings인데, 그냥 읽을 수 있는 부분?을 전부 출력해주는 듯 하다. strings data.txt만 하더라도 =이 여러 개 있는 애들만 찾아보면 되지만, 양심상 Brute Force는 최대한 뒤로 미뤄두고
+strings data.txt | grep “=====”를 통해 (=이 대충 몇 개 필요한지는 이미 strings data.txt로 확인함) 비밀번호를 찾아내자.
+
+bandit10
+그냥 base64로 인코딩했다고 대놓고 힌트를 준다. 그대로 base64 --decode data.txt를 입력하자.
+bandit11
+caesar cipher, ROT13이니 cat data.txt | tr ‘[A-Z]’ ‘[N-ZA-M]’ | tr ‘[a-z]’ ‘[n-za-m]’으로 비밀번호를 따낸다.
+
+bandit12
+data.txt 이 친구가 여러 번 압축되어있다고 해서, tmp 디렉터리에 나의 workspace를 만들라 해서 tmp로 가서 mkdir R_U_SERIOUS하고 들어가서 cp /home/bandit12/data.txt .로 data.txt를 옮겨왔다.
+xxd –r data.txt > data로 헥스덤프 파일을 읽어줬고, cat data했더니 무반응이더라.
+그래서 file data로 확인했더니 gzip된 파일이래서 mv data data.gz로 확장자를 .gz로 만들어준 뒤 gunzip data.gz로 다시 data를 만들어냈다.
+하지만 cat data해도 또 반응이 없어서 file data를 했더니 이번에는 bzip2로 압축된 파일이래서 mv data data.bz2로 확장자를 .bz2로 만든 뒤 bzip2 –d data.bz2로 또 data를 만들었다.
+제발 되라는 심정으로 cat data를 했지만 이번엔 이상한 문자열이 출력되었고, file data를 해보니 gzip된 파일이랜다. 자연스럽게 gunzip을 다시 해준 뒤 cat data를 했지만.. 이번에는 POSIX tar achive라고 한다. 이제 mv data data.tar로 확장자를 .tar로 바꾼 뒤 tar –xvf data.tar를 실행했더니 data5.bin이 튀어나왔다. 혹시나 해서 file data5.bin을 했더니 또 tar로 압축되었다길래 한 번 더 했더니 data6.bin이 나왔다.
+file data6.bin의 결과는 bzip2로 압축된 파일이니 rm data6.bin data.bz2, bzip2 –d data.bz2로 data를 다시 만들어냈고, file data는 tar로 압축된 파일이라니 mv data data.tar, tar –xvf data.tar로 data8.bin을 만들었다.
+data8.bin이 gzip되어있다니... 인내심을 가지고 gunzip을 해주니 드디어 ASCII text인 data가 만들어졌다!
+
+bandit13
+비밀번호는 존재하지 않지만 sshkey.private라는 key를 통해 bandit14로 넘어가라는 힌트가 있었다. 그래서 그냥 ssh –i ./sshkey.private bandit14@localhost로 바로 넘어갔다.
+
+bandit14
+localhost, 30000번 port를 사용해서 현재 레벨의 비밀번호를 입력하고 접속을 하란다.
+레벨 0에서 알려줬다는데 /etc/bandit_pass에 가면 현재 권한의 비밀번호를 확인할 수 있다고 한다. 거기서 비밀번호를 복사한 뒤
+telnet localhost 30000을 입력하고 password를 입력하길 기다리는 빈칸에 붙여넣어주면 끝.
+
+bandit15
+ssl, 즉 암호화 통신으로 연결해야 한다.
+openssl s_client –connect localhost:30001을 입력한 후, /etc/bandit_pass에 있는 bandit15 비밀번호를 입력하면 끝.
+
+bandit16
+이제 특정 포트 번호가 아닌 범위가 주어졌다. 31000부터 32000인데, 이 번호 1000개를 일일이 입력할 수 없기에 port scan을 하는 명령어인 nmap을 사용해보자.
+nmap –p 31000-32000 localhost
+또는 netstat –na | grep LISTEN으로 리스닝중인 포트만 모을 수 있다.
+이렇게 31518 포트와 31790 포트 두 개가 열려있는 것을 확인했으니 두 개의 포트에 비밀번호 보내기를 각각 시도해보자.
+31790에서 correct와 함께 긴 RSA 암호문을 얻을 수 있었다.
+bandit 16폴더 내에서는 파일을 생성할 수 없으니 /tmp에 가서 새 디렉터리를 만든 다음 그 안에 << EOF > sshkey.private를 입력한 뒤 아까 얻은 RSA암호문을 붙여넣고, 마지막 줄에 EOF를 입력하면 파일 저장이 끝난다.
+ssh –i sshkey.private localhost로 서버에 접속하려 했지만.. 내가 만든 파일이 too opened라면서 접속을 거부했다.
+개인키로 권한을 만들라는 지시에 따라 chmod 700 /tmp/boobobobo/sshkey.private를 입력한 뒤, 다시 ssh 접속을 해주면 Enter passphrase for key가 뜨는데.. 뜨면 안되는데;;
+그래서 개인키를 openssl s_client –connect localhost:31790 > /tmp/boobobobo/key로 저장을 해보았다. 복붙이 아니라 이렇게 한 뒤 chmod 700 해주면
+ssh –i key bandit17@localhost가 가능해진다!
+
+bandit17 (비번 : xLYVMN9WE5zQ5vHacb0sZEVqbrp7nBTn)
+passwords.old와 passwords.new에서 단 한 줄만이 바뀌었다고 하는데, passwords.new에 있는 줄이 비밀번호라고 한다.
+추천 명령어에 diff가 있길래 그냥 diff passwords.old passwords.new를 쳐봤더니 진짜 되더라.
+
+bandit18 (비번 : IueksS7Ubh8G3DCwVzrTd8rAVOwq3M5x)
+cygwin command로 처음 접속하자마자 ByeBye!를 출력하며 강제로 로그아웃하게 만든다.
+그래서 bandit17에서 localhost로 bandit18 넘어가보자.
+ssh bandit18@localhost –t /bin/sh를 입력하면 –t가 pseudo-tty를 강제 할당한다!
+(pseudo-tty를 알기 위해 먼저 tty란 teletypewriter의 약자로 기존 사용중인 터미널(콘솔) 외에 다른 콘솔들을 더 사용할 수 있다. 이 때, 2번째 콘솔부터는 시제로 존재하지 않는 가상의 콘솔이므로 pseudo-tty가 된다고 한다.)
+그래서 /bin/sh를 강제로 실행하면 bandit18 권한의 셸이 뜬다. 거기 있는 readme를 읽어오면 끝
+
+bandit19
+디렉터리에 bandit20-do라는 파일이 있었다. ./bandit20-do를 해보니 다른 유저의 권한을 가지고 돌리는 프로그램이라고 한다. ./bandit20-do id로 확인했더니 euid가 bandit20이더라. 그래서 ./bandit20-do cat /etc/bandit_pass/bandit20으로 바로 비번을 열었지 ㅎ
+
+bandit20
+
+이번에는 우리가 리스닝 중인 포트를 만들어서 대기시킨 후, 다른 터미널에서 ./suconnect를 통해 접속한다.
+
+suconnect를 통해 접속한 클라이언트가 bandit20의 비밀번호를 받는다면
+
+nmap을 통해 현재 열려있어 사용할 수 없는 포트를 확인한 뒤, 대충 12345같은거 골라서 echo "GbKksEFF4yrVs6il55v6gwY5aVje5f0j" | nc -l -p 12345를 해주자.
+
+그러면 12345번 포트를 사용하는 daemon이 실행되고, 다른 터미널에서 ./suconnect 12345 해주면 끝
+
+
+
+bandit21
+
+문제에서 /etc/cron.d에 가서 어떤 파일들이 실행되냐고 확인해보래서 가봤더니
+
+cronjob이란 친구들이 있었다. cat cronjob_bandit22 결과
+
+@reboot bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+* * * * * bandit22 /usr/bin/cronjob_bandit22.sh &> /dev/null
+
+> /dev/null이 결과 출력을 버린다는건데..  &>은 뭐하는 앤지 모르겠다
+
+그래서 그냥 ./usr/bin/cronjob_bandit22.sh하니까 permission denied 옆에 비번이 뜬다.
+
+원래 cd /usr/bin치고 cat cronjob_bandit22.sh하는 것 같은데.. 그냥 실행만 하면 비번이 뜨나보다.
+
+여튼 bandit22가는 비번은 t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv..인줄 알았지만 아니었다!
+놀랍게도 /tmp/t7O6lds9S0RqQh9aMcz6ShpAoZKF7fgv가 실행 파일의 이름이었고..
+결국 파일을 실행해보니 22로 가는 진짜 비밀번호가 떴다.
+
+bandit22
+이번에도 21과 똑같은 설명이 있어서 cronjob_bandit23파일을 실행시켜보았고, 똑같이 /usr/bin/cronjob_bandit23.sh를 실행시켜보았다. 그랬더니 조금 더 긴 셸 스크립트가 떴다. 코드에 나온 그대로 
+echo I am user $(whoami) | md5sum | cut ‘ ’ -f 1
+을 입력해보았더니 md5 hash가 진행된 문자열이 떴다.(8169b67bd894ddbb4412f91573b38db3)
+이제 그대로 cat /tmp/그 문자열을 입력해주면 되는줄 알았지만?? 이건 알고 보니 “현재 로그인되어있는 유저의 비밀번호”를 복사한 것이었다!
+이제 whoami 자리 대신에 bandit23을 넣고 똑같게 다시 시도해보자.
+
+bandit23
+문제 소개가 살벌하다.
+Note에는 자신의 힘으로 처음 작성하는 셸 스크립트를 통해 암호를 찾아내는 것이고, 클리어하면 제 자신을 칭찬해주라고 한다.
+
+21, 22와 똑같이 cat /usr/bin/cronjob_bandit24.sh를 실행하자.
+간단한 셸스크립트 코드가 보인다.
+#!/bin/bash
+
+myname=$(whoami)
+
+cd /var/spool/$myname
+echo "Executing and deleting all scripts in /var/spool/$myname:"
+for i in * .*;
+do
+if [ "$i" != "." -a "$i" != ".." ];
+then
+echo "Handling $i"
+timeout -s 9 60 ./$i
+rm -f ./$i
+fi
+done
+내 나름대로 해석을 해보자면..
+/var/spool/bandit24로 들어가서
+Executing and deleting all scripts in /var/spool/bandit24: 한 줄을 출력하면서
+60초 주기로 폴더 안에 있는 모든 파일들을 실행하는 것 같다.
+그럼 60초안에 빨리 코드를 짜서 /var/spool/bandit24안에 스크립트를 넣어야겠다..
+vi asdf.sh
+이후 셸 코드를
+#!/bin/sh
+mkdir /tmp/qwer1234qwer
+cat /etc/bandit_pass/bandit24 > /tmp/qwer1234qwer/password
+
+이렇게 짠 뒤, “chmod 777로 스크립트 읽기 권한을 bandit24에게도 줘야 한다!”
+빠르게 chmod 777 asdf.sh를 해주자.
+이상한 점 : 왠지 모르겠는데 내가 임의로 만들어놓은 /tmp/bkindtoevery1에다 다음과 같은 코드로 넣으려 하니까 몇 번을 해도 password가 만들어지지 않았다ㅠㅠㅠ
+#!/bin/sh
+
+cat /etc/bandit_pass/bandit24 > /tmp/bkindtoevery1/password
+이런 오류는 왜 발생하는지 모르겠다...
+(야매 풀이) 
+궁금해서 22번 풀이처럼 whoamI에 bandit23이 아니라 bandit24를 넣고 돌려봤는데... 놀랍게도 똑같은 비밀번호가 나온다!!!
+
+bandit24
+brute force를 사용하라고 문제에서 주었다.
+미쳤다고 10000개의 문자열을 손으로 칠 수는 없으니 간단한 코딩을 통해서 만들어야겠다고 생각해서
+셸스크립트 반복문을 열심히 찾아보았다.
+#!/bin/bash
+pass24=UoMYTrfrBFHyQXmg6gzctqAwOmw1IohZ
+pin=0
+while [ $pin -lt 10000 ]; do
+echo “Attempting PIN: $pin”
+attempt=”$(echo $pass24 $pin | nc localhost 30002)”
+if ! [[ $attempt == *”Wrong!”* ]]; then
+echo -ne “$attempt”
+break
+fi
+((pin++))
+done
+
+while~do~done이나 if~fi (fi가 진짜 귀엽넼ㅋㅋㅋㅋ), 대괄호 안에 조건문, 세미콜론, $를 붙여 변수명이라는 것을 알려주는 등 셸스크립트의 문법을 어느 정도 익힐 수 있었다..고는 하지만 이 방법으로 안되더라.
+
+그래서 그냥 0부터 9999까지 리스트를 다 만든 다음 하나씩 돌려보기로 했다.
+#!/bin/bash
+password=“UoMYTrfrBFHyQXmg6gzctqAwOmw1IohZ”
+for i in {0..9999}
+do
+	echo “$password $i” >> /tmp/bandit24_bkindtoevery1/pwlist
+done
+로 만든 다음
+cat pwlist | nc localhost 30002 >> ./req
+로 req 파일에 저장한 뒤 다시 ./req를 돌려주자.
+라고 하고 싶었지만 Wrong! : command not found라는 말과 함께 거절당했다.
+
+결국 첫 번째로 시도한 코드를 다시 실행시켰고, 하나의 쿼리가 대략 10초 정도 걸리는 프로그램이라 한참을 기다렸다. 아마 cygwin에서 실행시켜서 퍼포먼스가 느린게 아닐까 하는 나의 생각이다.
+너무 긴 시간이 걸려 결국 session timeout이 일어났는데,
+이번엔
+#!/bin/bash
+password=UoMYTrfrBFHyQXmg6gzctqAwOmw1IohZ
+for i in {0000..9999}
+do
+	echo $password $i >> password.txt
+done
+이렇게 txt 파일로 만든 뒤 cat password.txt | nc localhost 30002를 해보았더니 잘 되더라..
+uNG9O58gUE7snukf3bvZ0rxhtnjzSGzG
+쓸데없이 echo에 따옴표를 넣은게 잘못인가 싶어 다시 따옴표를 넣고 시도해봤지만 역시 잘 되더라.
+txt 파일인가 싶어 txt를 빼고 다시 돌려봐도 잘 됐고..
+혹시나 하는 마음에 두 번째 시도에서 ./req를 빼고 그냥 화면에 출력하게 했더니 timeout이 뜨더라.
+왠지 모르겠다ㅠㅠㅠ
+
+bandit25
+ssh –i bandit26.sshkey bandit26@localhost로 접속을 시도했더니..
+접속하자마자 바로 연결이 끊겨버렸다.
+대체 어떻게 해야 하는지 감도 안와서 삽을 푸다가 찾아본 결과..
+cat /etc/passwd | grep bandit26으로 패스워드를 어떻게 확인하나 봤더니 
+보통 레벨이면 bandit9:x:11009:11009:bandit level 9:/home/bandit9:/bin/bash
+이렇게 뒤에 /bin/bash에서 실행하는데
+이 친구는 bandit26:x:11026:11026:bandit level 26:/home/bandit26:/usr/bin/showtext
+이렇게 완전히 다른 곳에서 실행할 수 있는 것이다.
+그래서 cat /usr/bin/showtext를 해봤더니 이런 코드가 뜨더라.
+#!/bin/sh
+
+export TERM=linux
+
+more ~/text.txt
+exit 0
+“exit 0”이란 명령어 때문에 bandit26을 들어가자마자 바로 연결이 끊긴다.
+하지만 more이란 명령어가 갑자기? 싶어서 검색해보니 text.txt가 한 화면에 다 담기지 않을 경우 스크롤할 수 있도록 여지를 남겨준다.
+그래서 cygwin 창을 80*4로 세로만 매우 작게 줄여준 다음에 bandit26을 들어가보자.
+그러면 아직 bandit26이란 그림이 채 나오지 않은 상태로 more 50%가 뜰 것이고, v키를 눌러 vi 편집기로 들어가주자. 다음, :e /etc/bandit_pass/bandit26을 입력하면 끝!
+마지막으로 :set shell=/bin/bash를 해주고(현재는 showtext가 기본 shell이므로) :shell로 bandit26으로 돌아오자.
+
+bandit26
+방금 방법으로 바로 접속했다.
+ls를 해보니 빨간색으로 bandit27-do라는 파일이 있길래 ./bandit27-do로 실행해보았다.
+정말 친절하게도 
+Run a command as another user.
+Example: ./bandit27-do id
+이렇게 되어있길래 Example 그대로 입력해봤더니 euid만 bandit27로 되어있었다.
+즉 이 프로그램을 실행하는 동안에는 bandit27의 권한으로 프로그램을 실행하므로 자연스럽게
+./bandit27-do cat /etc/bandit_pass/bandit27로 풀어버렸다!
+
+bandit27 비밀번호 5czgV9L3Xx8JPOyRbXh6lQbmIOWvPT6Z
+git이래서 다행히 쉽게 진행할 수 있었다.
+/tmp에 폴더 만들고 git clone ssh://bandit27-git@localhost/home/bandit27-git/repo해서 README 보면 끝
+
+bandit28 
+마찬가지로 git clone을 해준다.
+이번엔 README.md에서 bandit29에 대한 메모라면서 비밀번호를 알려주지 않는다.
+이를 보고 “누군가 비밀번호가 있던 자리를 xxxx로 대체했다”고 유추할 수 있다.
+git log –p를 입력해서 비밀번호가 어떻게 바뀌었는지 확인해보면 삭제된 비밀번호가 뜬다!
+
+bandit29
+똑같이 git clone을 해준다.
+이번에도 git log –p를 했지만 비밀번호 변경 내역은 존재하지 않았다.
+아마 다른 브랜치에서 바꿨겠거니 싶어서 git branch를 했지만 master밖에 뜨지 않았다..
+옵션 –a를 붙여야 local에 있던 브랜치까지 전부 보이더라.
+/remote/origin/~~ 이런 식으로 나왔다.
+그래서 하나하나 git checkout으로 바꿔가면서 git log –p를 해보니까 dev 브랜치에서 비밀번호가 나왔다!
+
+bandit30
+또 git clone을 해준다.
+이번에는 README 파일이 just empty라고 뜬다..
+git show를 해도, git branch –a를 해도 아무 것도 보이지 않았다.
+하지만 검색해보니 숨겨진 .git 디렉토리에서 refs에 브랜치가 존재한다고 한다.
+그래서 들어가봤더니 master 말고도 secret 요놈이 있었다!
+git show master를 하면 master 브랜치에서 가장 최근에 수정한 just an empty file..이 떴고,
+git show secret을 하니 역시나 비밀번호가 있었다!
+
+bandit31
+또또또 git clone을 해준다.
+이번엔 README에서 직접 git으로 push를 하라고 한다.
+File name : key.txt
+Content : ‘May I come in?’
+Branch : master
+그래서 vi key.txt로 May I come in?을 넣어준 뒤, git add key.txt를 해보았으나 .gitignore files에 의해 무시당했다..
+그래서 git add –f key.txt, git commit, git push를 하니까 자체 검사 시스템이 있더라.
+여튼 이렇게 통과~
+
+bandit32
+sh 셸에서 강제로 대문자로 입력받아서 아무 것도 할 수가 없다..ㅠㅠ
+근데 또 찾아보니까 셸에서 $0을 입력하면 그냥 bash가 실행이 된다더라.
+$0이 Expands to the name of the shell or shell script. This is set at shell initialization.
+그래서 알파벳도 안쓰겠다 $0 입력하고 cat /etc/bandit_pass/bandit33을 했다!
+
+~2020/02/25 현재 마지막 단계 도착!!!
