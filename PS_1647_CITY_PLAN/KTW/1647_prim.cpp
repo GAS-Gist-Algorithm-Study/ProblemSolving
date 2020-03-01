@@ -31,19 +31,20 @@ int main(){
     int cur=1;
 
     visited[1] = true;
-    for(auto i: edges[1]) pq.emplace(i);
+    for (auto i: edges[1]) 
+        pq.emplace(i);
     while(cur<N && !pq.empty()){
         Edge e = pq.top();
         pq.pop();
-        if(visited[e.des]){
+        if(visited[e.des]) 
             continue;
-        }
         visited[e.des] = true;
         ans += e.cost;
-        if(max < e.cost)
+        if(max < e.cost)    
             max = e.cost;
         cur++;
-        for(auto j: edges[e.des]) pq.emplace(j);
+        for(auto j: edges[e.des]) 
+            pq.emplace(j);
     }
     cout << ans - max;
 
