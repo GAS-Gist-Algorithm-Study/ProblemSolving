@@ -1,8 +1,7 @@
 #include<iostream>
 #include<vector>
 #include<queue>
-#include<cstring>
-#define INF 987654321
+#include<climits>
 
 using namespace std;
 typedef pair<int, int> pii;
@@ -19,7 +18,7 @@ struct Edge{
 int minCost(int startCity, int endCity, vector<pii> (&adjList)[1001]){
     int costs[1001];
     for (int i = 0; i < 1001; i++)
-        costs[i] = 0x7fffffff;
+        costs[i] = INT_MAX;
     costs[startCity] = 0;
     
     priority_queue<Edge, vector<Edge>, greater<Edge> > pq;
