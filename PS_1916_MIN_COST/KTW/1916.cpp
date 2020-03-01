@@ -1,7 +1,7 @@
 #include<iostream>
+#include<climits>
 #include<vector>
 #include<queue>
-#define INT_MAX 2000000000
 #define cost first
 #define des second
 using namespace std;
@@ -13,7 +13,7 @@ int main(){
     ios::sync_with_stdio(false);
     int N,M;
     cin >> N >> M;
-    vector<edge> Edges[N];
+    vector<edge> Edges[N+1];
     for (int m = 0; m < M; m++){
         int src,des,cost;
         cin >> src >> des >> cost;
