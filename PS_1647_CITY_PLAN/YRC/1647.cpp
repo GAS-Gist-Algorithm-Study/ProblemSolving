@@ -64,10 +64,13 @@ int main (){
     int cost, a, b;
     cin >> N >> M;
 
+    for(int i =0; i<N; i++){
+        id[i] = i;
+    }
+
     for(int i =0 ; i<M; i++){
         cin >> edge.V1 >> edge.V2 >> edge.cost;
         PQ.push_back(edge);
-        id[i] = i;
     }
 
     Kruskal();
