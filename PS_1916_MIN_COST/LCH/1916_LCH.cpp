@@ -1,17 +1,11 @@
 #include <cstdio>
-#include <cstring>
 #include <stack>
 #include <vector>
-#include <algorithm>
 using namespace std;
 
 typedef struct{
 	int dest, w;
 }edge;
-
-bool compare(const edge &a, const edge &b){
-	return a.dest < b.dest;
-}
 
 int main(){
 	int n, m, x, y, w, city[1001];
@@ -24,8 +18,6 @@ int main(){
 		scanf("%d %d %d", &x, &y, &w);
 		v[x].push_back({y, w});
 	}
-	for(int i=1; i<=n; i++)
-		sort(v[i].begin(), v[i].end(), compare);
 	
 	scanf("%d %d", &x, &y);
 	city[x] = 0;
