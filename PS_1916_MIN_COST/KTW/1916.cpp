@@ -17,14 +17,11 @@ bool relax(int cities[], node& n, edge& e){
     return false;
 }
 
-int findSPT(vector<vector<edge>> &Edges, int &N, int &start, int &end){
+int findSPT(vector<edge>* Edges, int &N, int &start, int &end){
     int* cities = (int*) malloc (sizeof(int)*(N+1));
-    for (int i = 1; i <= N; i++){
-       if (i==start)
-           cities[i] = 0;
-       else 
-           cities[i] = INT_MAX;
-    }
+    fill(cities,cities+N+1,INT_MAX);
+    //fill이 시간이 조금 더 걸리는듯
+    cities[start] = 0;
     
     priority_queue<node,vector<node>,greater<node> > pq;
     pq.emplace(0,start);
@@ -39,7 +36,7 @@ int findSPT(vector<vector<edge>> &Edges, int &N, int &start, int &end){
             continue;
         
         for( edge& i:Edges[tmp.des] )
-            if (relax ( cities, tmp, i )) 
+            if ( relax ( cities, tmp, i )) 
                 pq.emplace(cities[i.des],i.des);
     }
 }
@@ -49,8 +46,7 @@ int main(){
     cin.tie(NULL);
     int N, M;
     cin >> N >> M;
-    vector<vector<edge>> Edges;
-    Edges.resize(N+1);
+    vector<edge> Edges[N+1];
     
     for (int m = 0; m < M; m++){
         int src,des,cost;
