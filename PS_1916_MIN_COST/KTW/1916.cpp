@@ -9,11 +9,49 @@ using namespace std;
 typedef pair<int,int> edge;
 typedef pair<int,int> node;
 
+bool relax(int cities[], node& n, edge& e){
+    if( cities[e.des] > n.cost + e.cost ){
+        cities[e.des] = n.cost + e.cost;
+        return true;
+    }
+    return false;
+}
+
+int findSPT(vector<vector<edge>> &Edges, int &N, int &start, int &end){
+    int* cities = (int*) malloc (sizeof(int)*(N+1));
+    for (int i = 1; i <= N; i++){
+       if (i==start)
+           cities[i] = 0;
+       else 
+           cities[i] = INT_MAX;
+    }
+    
+    priority_queue<node,vector<node>,greater<node> > pq;
+    pq.emplace(0,start);
+    
+    while(1){
+        node tmp = pq.top();
+        if ( tmp.des == end )
+            return tmp.cost;
+        pq.pop();
+        
+        if ( cities[tmp.des] < tmp.cost ) 
+            continue;
+        
+        for( edge& i:Edges[tmp.des] )
+            if (relax ( cities, tmp, i )) 
+                pq.emplace(cities[i.des],i.des);
+    }
+}
+
 int main(){
     ios::sync_with_stdio(false);
-    int N,M;
+    cin.tie(NULL);
+    int N, M;
     cin >> N >> M;
-    vector<edge> Edges[N+1];
+    vector<vector<edge>> Edges;
+    Edges.resize(N+1);
+    
     for (int m = 0; m < M; m++){
         int src,des,cost;
         cin >> src >> des >> cost;
@@ -22,41 +60,7 @@ int main(){
 
     int start,end;
     cin >> start >> end;
-   
-    int* cities = (int*) malloc (sizeof(int)*(N+1));
-    bool* visited = (bool*) malloc (sizeof(bool)*(N+1));
-    for (int i = 1; i <= N; i++){
-       if (i==start) {
-           cities[i] = 0;
-           visited[i] = true;
-       }
-       else cities[i] = INT_MAX;
-       visited[i] = false;
-    }
     
-    priority_queue<node,vector<node>,greater<node> > pq;
-    node n_start;
-    n_start.cost = 0;
-    n_start.des = start;
-    pq.emplace(n_start);
-    while(pq.size()>0){
-        node tmp = pq.top();
-        if( tmp.des == end ){
-            cout << tmp.cost;
-            break;
-        }
-        pq.pop();
-        
-        if( visited[tmp.des] ) continue;
-        
-        for( auto i:Edges[tmp.des] ){
-            if( visited[i.des] ) continue;
-            if( cities[i.des] > tmp.cost + i.cost ){
-                cities[i.des] = tmp.cost + i.cost;
-                pq.emplace(cities[i.des],i.des);
-            }
-        }
-        visited[tmp.des] = true;
-    }
+    cout << findSPT(Edges, N, start, end) << endl;   
     return 0;
 }
