@@ -17,7 +17,7 @@ struct Edge{
     }
 };
 
-int minCost(int startCity, int endCity, vector<pii> (&adjList)[1001]){
+int minCost(int startCity, int endCity, vector<pii> adjList[]){
     int costs[1001];
     for (int i = 0; i < 1001; i++)
         costs[i] = INT_MAX;
