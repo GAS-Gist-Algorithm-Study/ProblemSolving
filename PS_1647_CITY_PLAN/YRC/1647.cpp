@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <queue>
 #include <algorithm>
 
 using namespace std;
@@ -16,14 +15,14 @@ struct Edge{
     int cost;
 };
 
-
-
-//priority_queue<Edge, vector<Edge>, Comp> PQ;
 vector<Edge> PQ;
-int find_id(int i){
-    if (i == id[i])
-        return i;
-    return id[i] = find_id(id[i]);
+
+int find_id(int n){
+    if(id[n] == n){
+        return n;
+    }
+    else
+        return id[n] = find_id(id[n]);
 }
 
 void set_union(int a, int b) {
@@ -46,7 +45,7 @@ void Kruskal(){
         if(count == N-1){
             break;
         }
-        
+
         if(find_id(e.V1) != find_id(e.V2)){
             set_union(e.V1,e.V2);
             //cout << "id of V1 (" << front.V1 << "): " << id[front.V1] << ", id of V2 (" << front.V2 << "): " << id[front.V2] << endl;
@@ -64,17 +63,17 @@ int main (){
     int cost, a, b;
     cin >> N >> M;
 
-    for(int i =0; i<N; i++){
-        id[i] = i;
-    }
-
     for(int i =0 ; i<M; i++){
         cin >> edge.V1 >> edge.V2 >> edge.cost;
         PQ.push_back(edge);
     }
+    
+    for(int i = 0; i<N+1; i++){
+        id[i] = i;
+    }
 
     Kruskal();
-    
+
     totalcost = totalcost - last_cost;
     cout << totalcost;
 }
