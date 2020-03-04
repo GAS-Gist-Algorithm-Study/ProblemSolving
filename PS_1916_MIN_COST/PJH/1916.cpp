@@ -14,7 +14,7 @@ bool relax(int minCostTo[], edge& e, int node)
   if (minCostTo[e.to] <= minCostTo[node] + e.cost) 
     return false;
 
-  minCostTo[e.to] =  minCostTo[node] + e.cost;
+  minCostTo[e.to] = minCostTo[node] + e.cost;
   return true;
 }
 
