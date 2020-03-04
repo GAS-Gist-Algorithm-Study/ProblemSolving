@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#define endl '\n'
 
 #define edge pair<int, int>
 #define minCost pair<int, int>
