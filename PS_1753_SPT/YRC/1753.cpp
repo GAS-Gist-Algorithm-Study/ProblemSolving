@@ -10,10 +10,15 @@ typedef pair<int,int> pii;
 
 class Edge{
     public:
-    int u, v, cost;
+    int v, cost;
+    Edge() {}
+    Edge(int ep, int w){
+        v = ep;
+        cost = w;
+    }
 
-    void set_Edge(int sp, int ep, int w){
-        u = sp;
+    void set_Edge(int ep, int w){
+        //u = sp;
         v = ep;
         cost = w;
     }
@@ -28,20 +33,22 @@ class Comp{
 
 void Dijkstra(vector<Edge> Edges[], int* distance, int sp){
     priority_queue<Edge, vector<Edge>, Comp> G;
-    Edge front;
-    front.set_Edge(sp,sp,0);
-    cout << front.u << " " << front.v << " "<< front.cost<< endl;
-    G.push(front);
+    // cout << front.u << " " << front.v << " "<< front.cost<< endl;
+    Edge edge;
+    edge.set_Edge(sp,0);
+
+    G.push(edge);
     distance[sp] = 0;
 
     while(!G.empty()){
-        int u = G.top().u;
+        edge = G.top();
+        int u = edge.v;
         G.pop();
         for(int i = 0; i<Edges[u].size();i++){
             int v = Edges[u][i].v;
             if(distance[v]> distance[u] + Edges[u][i].cost){
                 distance[v] = distance[u] + Edges[u][i].cost;
-                G.push(Edges[u][i]);
+                G.emplace(Edges[u][i].v, distance[v]);
             }
         }
     }
@@ -52,9 +59,9 @@ void printDistance(int* distance, int V){
         int dist = distance[i];
 
         if(dist == max_cost)
-            cout << "INF" << endl; 
+            cout << "INF\n"; 
         else
-            cout << distance[i] << endl;
+            cout << distance[i] << "\n";
     }
 }
 
@@ -76,7 +83,7 @@ int main (){
 
     for(int i = 0; i<E; i++){
         cin >> u >> v >> w;
-        edge.set_Edge(u,v,w);  
+        edge.set_Edge(v,w);  
         Edges[u].push_back(edge);
     }
 
