@@ -1,8 +1,6 @@
 #include <iostream>
 #include <algorithm>
-#include <utility>
 #include <vector>
-#include <cstring>
 
 typedef std::pair<int, int> edge;
 #define point first
@@ -24,10 +22,10 @@ int findMaxRoute(
   
   for (const edge& e: nodes[N]) {
     int partialMax = findMaxRoute(nodes, lut, e.src, M - 1);
+
     if (partialMax != IMPOSIBBLE) {
       int partialSum = partialMax + e.point;
-      if (partialSum > maxPoint)
-        maxPoint = partialSum;
+      maxPoint = max(maxPoint, partialSum);
     }
   }
 
