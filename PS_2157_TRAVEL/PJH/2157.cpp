@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <utility>
 #include <vector>
+#include <cstring>
 
 typedef std::pair<int, int> edge;
 #define point first
@@ -19,34 +20,21 @@ int findMaxRoute(
   if (lut[N][M] != -1)
     return lut[N][M];
 
-  if (M == 2) {
-    int maxPoint = -1;
-
-    for (const edge& e: nodes[N])
-      if (e.src == 1 && e.point > maxPoint)
-        maxPoint = e.point;
-
-    if (maxPoint == -1)
-      return lut[N][M] = IMPOSIBBLE;
-
-    return lut[N][M] = maxPoint;
-  } else {
-    int maxPoint = -1;
-    
-    for (const edge& e: nodes[N]) {
-      int partialMax = findMaxRoute(nodes, lut, e.src, M - 1);
-      if (partialMax == IMPOSIBBLE)
-        continue;
-
+  int maxPoint = -1;
+  
+  for (const edge& e: nodes[N]) {
+    int partialMax = findMaxRoute(nodes, lut, e.src, M - 1);
+    if (partialMax != IMPOSIBBLE) {
       int partialSum = partialMax + e.point;
       if (partialSum > maxPoint)
         maxPoint = partialSum;
     }
-    if (maxPoint == -1)
-      return lut[N][M] = IMPOSIBBLE;
-
-    return lut[N][M] = maxPoint;
   }
+
+  if (maxPoint == -1)
+    return lut[N][M] = IMPOSIBBLE;
+
+  return lut[N][M] = maxPoint;
 }
 
 int findMaxRoute(const vector<edge> nodes[], int N, int M)
@@ -54,7 +42,7 @@ int findMaxRoute(const vector<edge> nodes[], int N, int M)
   int** lut = (int**) malloc(sizeof(int*) * (N + 1));
   for (int i = 0; i <= N; i++)
     lut[i] = (int*) malloc(sizeof(int) * (M + 1));
-  
+
   for (int i = 0; i <= N; i++)
     for (int j = 0; j <= M; j++)
       lut[i][j] = -1;
