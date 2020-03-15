@@ -3,14 +3,14 @@ using namespace std;
 int life[8];
 int weight[8];
 int numberOfEggs;
-int MaxValue = 0;
+int maxValue = 0;
 
-bool AbleToHit(int ith_egg);
-void MaxBreaking(int ith_egg);
-bool OtherEggsCleared(int ith_egg);
-void Breaking(int ith_egg, int target_egg);
-void ReturnBreaking(int ith_egg, int target_egg);
-int NumOfBrokenEggs(void);
+void maxBreaking(int ith_egg);
+bool ableToHit(int ith_egg);
+bool otherEggsCleared(int ith_egg);
+void breaking(int ith_egg, int target_egg);
+void returnBreaking(int ith_egg, int target_egg);
+int numberOfBrokenEggs(void);
  
 int main(){
     ios::sync_with_stdio(NULL);
@@ -18,40 +18,40 @@ int main(){
     cin >> numberOfEggs;
     for (int n = 0; n < numberOfEggs; n ++)
         cin >> life[n] >> weight[n];
-    MaxBreaking(0);
-    cout << MaxValue << "\n";
+    maxBreaking(0);
+    cout << maxValue << "\n";
 }
 
-void MaxBreaking(int ith_egg){
-    if (ith_egg == numberOfEggs){
-        MaxValue = max(MaxValue, NumOfBrokenEggs());
+void maxBreaking(int ithEgg){
+    if (ithEgg == numberOfEggs){
+        maxValue = max(maxValue, numberOfBrokenEggs());
         return;
     }
-    if (!AbleToHit(ith_egg)){
-        MaxBreaking(ith_egg+1);
+    if (!ableToHit(ithEgg)){
+        maxBreaking(ithEgg+1);
         return;
     }
 
-    for(int target_egg = 0; target_egg < numberOfEggs; target_egg++){
-        if (ith_egg != target_egg && life[target_egg] > 0){
-            Breaking(ith_egg,target_egg);
-            MaxBreaking(ith_egg+1);
-            ReturnBreaking(ith_egg, target_egg);
+    for(int targetEgg = 0; targetEgg < numberOfEggs; targetEgg++){
+        if (ithEgg != targetEgg && life[targetEgg] > 0){
+            breaking(ithEgg,targetEgg);
+            maxBreaking(ithEgg+1);
+            returnBreaking(ithEgg, targetEgg);
         }
     }
 }
 
-bool AbleToHit(int ith_egg){
-    if (life[ith_egg]<=0)
+bool ableToHit(int ithEgg){
+    if (life[ithEgg]<=0)
         return false; 
-    if (OtherEggsCleared(ith_egg))
+    if (otherEggsCleared(ithEgg))
         return false;
     return true;
 }
  
-bool OtherEggsCleared(int ith_egg){
+bool otherEggsCleared(int ithEgg){
     for (int egg = 0; egg < numberOfEggs; egg++){
-        if (egg == ith_egg)
+        if (egg == ithEgg)
             continue;
         if (life[egg] > 0)
             return false;
@@ -59,21 +59,21 @@ bool OtherEggsCleared(int ith_egg){
     return true;
 }
 
-void Breaking(int ith_egg, int target_egg){
-    life[ith_egg] -= weight[target_egg];
-    life[target_egg] -= weight[ith_egg];
+void breaking(int ithEgg, int targetEgg){
+    life[ithEgg] -= weight[targetEgg];
+    life[targetEgg] -= weight[ithEgg];
 }
 
-void ReturnBreaking(int ith_egg, int target_egg){
-    life[ith_egg] += weight[target_egg];
-    life[target_egg] += weight[ith_egg];
+void returnBreaking(int ithEgg, int targetEgg){
+    life[ithEgg] += weight[targetEgg];
+    life[targetEgg] += weight[ithEgg];
 }
 
-int NumOfBrokenEggs(void){
-    int BrokenEggs = 0;
+int numberOfBrokenEggs(void){
+    int brokenEggs = 0;
     for (int egg = 0; egg < numberOfEggs ; egg++)
         if (life[egg] <= 0)
-            BrokenEggs++;
-    return BrokenEggs;
+            brokenEggs++;
+    return brokenEggs;
 }
 
