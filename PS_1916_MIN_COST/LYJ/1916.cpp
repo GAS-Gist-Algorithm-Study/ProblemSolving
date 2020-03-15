@@ -10,38 +10,34 @@ struct Edge{
     int start;
     int end;
     int cost;
+    Edge() {}
+    Edge(int start, int end, int cost) : start(start), end(end), cost(cost) {}
     bool operator >(const Edge &A) const{
         return cost > A.cost;
     }
 };
 
-int minCost(int startCity, int endCity, vector<pii> (&adjList)[1001]){
+int minCost(int startCity, int endCity, vector<pii> adjList[]){
     int costs[1001];
     for (int i = 0; i < 1001; i++)
         costs[i] = INT_MAX;
     costs[startCity] = 0;
     
-    priority_queue<Edge, vector<Edge>, greater<Edge> > pq;
+    queue<Edge> q;
     Edge temp;
-    for(int i=0;i<adjList[startCity].size();i++){
-        temp.start = startCity;
-        temp.end = adjList[startCity][i].second;
-        temp.cost = adjList[startCity][i].first;
-        pq.push(temp);
-    }
-
+    for(auto i : adjList[startCity])
+        q.emplace(Edge(startCity, i.second, i.first));
+    
     Edge cur;
-    while(!pq.empty()){
-        cur = pq.top();
-        pq.pop();
+    int vecSize;
+    while(!q.empty()){
+        cur = q.front();
+        q.pop();
+        vecSize = adjList[cur.end].size();
         if( costs[cur.end] > costs[cur.start] + cur.cost ){
             costs[cur.end] = costs[cur.start] + cur.cost;
-            for(int i=0;i<adjList[cur.end].size();i++){
-                temp.start = cur.end;
-                temp.end = adjList[cur.end][i].second;
-                temp.cost = adjList[cur.end][i].first;
-                pq.push(temp);
-            }
+            for(auto i : adjList[cur.end])
+                q.emplace(Edge(cur.end, i.second, i.first));
         }
     }
     return costs[endCity];
@@ -58,7 +54,7 @@ int main(){
     int temp1, temp2, temp3;
     for(int i=0;i<numBus;i++){
         cin >> temp1 >> temp2 >> temp3;
-        adjList[temp1].emplace_back(make_pair(temp3, temp2));
+        adjList[temp1].emplace_back(temp3, temp2);
     }
 
     int startCity, endCity;
