@@ -13,13 +13,14 @@ using namespace std;
 
 struct group
 {
-  //group (int number) : number(number) {}
-  int left;
   vector<yx> stones;
   set<yx> toCover;
 };
 
-void bfs(vector<vector<int> >& map, int N, int M, int i, int j, group& newGroup)
+void bfs(vector<vector<int> >& map, 
+        int N, int M, 
+        int i, int j, 
+        group& newGroup)
 {
   queue<yx> q;
   q.emplace(i, j);
