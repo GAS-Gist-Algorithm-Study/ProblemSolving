@@ -1,4 +1,5 @@
 #include <iostream>
+#include <numeric>
 #include <algorithm>
 #include <vector>
 #define egg pair<int, int>
@@ -10,10 +11,10 @@ using namespace std;
 void dfs(int N, int& maxCount, egg eggs[], int index)
 {
   if (index == N) {
-    int count = 0;
-    for (int i = 0; i < N; i++) 
-      if (eggs[i].shield <= 0)
-        count++;
+    int count = accumulate(eggs, eggs + N, 0, 
+        [](int acc, const egg& e) { 
+          return acc + (e.shield <= 0);
+        });
     
     maxCount = max(maxCount, count);
     return;
@@ -40,7 +41,6 @@ void dfs(int N, int& maxCount, egg eggs[], int index)
     eggs[i].shield += onHand.weight;
     onHand.shield += eggs[i].weight;
   }
-
 }
 
 int solve(int N, egg eggs[])
