@@ -11,9 +11,9 @@ struct egg{
 };
 
 int breakEggs(vector<egg> &eggs, int i, int N){
-    int numBrok = 0;
     //끝까지 다 봄
     if(i == N){
+    int numBrok = 0;
         for(int j=0;j<N;j++){
             if(eggs[j].strength <= 0) numBrok++;
         }
@@ -55,7 +55,6 @@ int main(){
 
     vector<egg> eggs;
     eggs.resize(N);
-    int tempStr, tempW;
     for(int i=0;i<N;i++)
         cin >> eggs[i].strength >> eggs[i].weight;
 
