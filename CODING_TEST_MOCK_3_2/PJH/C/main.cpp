@@ -64,7 +64,7 @@ int** makeMap(int N, int M)
   return map;
 }
 
-void checkOnes(int** scores, const vector<group>& ones, int& maxNum, int N, int M)
+void checkOnes(int** scores, int& maxNum, int N, int M)
 {
   vector<int> nums;
   for (int i = 0; i < N; i++)
@@ -81,7 +81,7 @@ void checkOnes(int** scores, const vector<group>& ones, int& maxNum, int N, int 
     maxNum = max(maxNum, nums[0] + nums[1]);
 }
 
-void checkTwos(int** scores, const vector<group>& twos, int& maxNum, int N, int M)
+void checkTwos(int** scores, const vector<group>& twos, int& maxNum)
 {
   set<yx> toCoverTotal;
   map<yx, vector<int>> toConsider;
@@ -141,8 +141,8 @@ int solve(int** map, int N, int M)
   
   int maxNum = 0;
 
-  checkOnes(scores, ones, maxNum, N, M);
-  checkTwos(scores, twos, maxNum, N, M);
+  checkOnes(scores, maxNum, N, M);
+  checkTwos(scores, twos, maxNum);
 
   return maxNum;
 }
