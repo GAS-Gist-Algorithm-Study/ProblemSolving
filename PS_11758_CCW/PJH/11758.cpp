@@ -39,3 +39,4 @@ int main(void)
   endl(cout);
   return 0;
 }
+

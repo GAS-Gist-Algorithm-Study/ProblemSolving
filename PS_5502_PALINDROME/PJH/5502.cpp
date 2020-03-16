@@ -4,6 +4,7 @@
 
 using namespace std;
 
+/*
 int LCS(string str1, string str2)
 {
   int len1 = str1.size();
@@ -22,6 +23,32 @@ int LCS(string str1, string str2)
   }
 
   return lut[len1][len2];
+}
+*/
+
+int _LCS(const string& str1, const string& str2, int i, int j, int** lut)
+{
+  if (lut[i][j] != -1)
+    return lut[i][j];
+
+  if (i == 0 || j == 0)
+    return lut[i][j] = 0;
+
+  if (str1[i - 1] == str2[j - 1])
+    return lut[i][j] = 1 + _LCS(str1, str2, i - 1, j - 1, lut);
+  return lut[i][j] = max(
+      _LCS(str1, str2, i - 1, j, lut), _LCS(str1, str2, i, j -1, lut)
+      );
+}
+
+int LCS(string str1, string str2)
+{
+  int** lut = (int**)malloc((str1.size() + 1) * sizeof(int*));
+  for (int i = 0; i <= str1.size(); i++)
+    lut[i] = (int*)malloc((str2.size() + 1) * sizeof(int));
+
+
+  return _LCS(str1, str2, str1.size(), str2.size(), lut);
 }
 
 int main(void)
