@@ -65,9 +65,8 @@ vector<int> getCandidates(int map[][9], yx loc)
 
 bool backtrack(int map[][9], const vector<yx>& zeros, int i, int N)
 {
-  if (i == N) {
+  if (i == N) 
     return true;
-  }
 
   yx loc = zeros[i];
   vector<int> candidates = getCandidates(map, loc);
