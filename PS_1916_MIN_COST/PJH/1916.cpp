@@ -4,6 +4,7 @@
 
 #define edge pair<int, int>
 #define minCost pair<int, int>
+#define minHeap priority_queue<minCost, vector<minCost>, greater<minCost> >
 #define cost first
 #define to second
 
@@ -18,11 +19,13 @@ bool relax(int minCostTo[], edge& e, int node)
   return true;
 }
 
-void findSPT(priority_queue<minCost>& pq, vector<vector<edge>>& edges, int minCostTo[])
+void findSPT(minHeap& pq, vector<vector<edge>>& edges, int minCostTo[], int dst)
 {
   while (!pq.empty()) {
     minCost curNode = pq.top();
     pq.pop();
+    if (curNode.to == dst)
+      return;
     
     if (curNode.cost > minCostTo[curNode.to])
       continue;
@@ -56,10 +59,10 @@ int main()
     minCostTo[i] = 0x7fffffff;
   minCostTo[src] = 0;
 
-  priority_queue<minCost> pq;
+  minHeap pq;
   pq.emplace(0, src);
 
-  findSPT(pq, edges, minCostTo);
+  findSPT(pq, edges, minCostTo, dst);
 
   cout << minCostTo[dst] << endl;
   return 0;

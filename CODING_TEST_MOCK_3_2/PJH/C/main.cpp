@@ -1,179 +1,166 @@
 #include <iostream>
-#include <vector>
 #include <algorithm>
 #include <set>
 #include <map>
-#include <queue>
-
+#include <vector>
 #define yx pair<int, int>
 #define y first
 #define x second
 
 using namespace std;
 
-struct Group
+struct group
 {
-  int left;
   int numStones = 0;
   set<yx> toCover;
-
-  bool operator < (const Group& g) const {
-    return toCover.size() > g.toCover.size();
-  }
 };
 
-bool bfs(vector<vector<int> >& map, int N, int M, int i, int j, Group& newGroup)
+void makeGroup(group& newGroup, int** map, int i, int j, int N, int M)
 {
-  bool worthy = true;
-  queue<yx> q;
-  q.emplace(i, j);
- 
-  while (!q.empty()) {
-    yx target = q.front();
-    q.pop();
+  if (i >= N || i < 0 || j >= M || j < 0)
+    return;
 
-    if (target.y >= N || target.y < 0 
-        || target.x >= M || target.x < 0)
-      continue;
+  if (map[i][j] == 2) {
+    map[i][j] = -2;
+    newGroup.numStones++;
     
-    switch (map[target.y][target.x]) {
-    case 2:
-      map[target.y][target.x] = -2; // visited
-      newGroup.numStones++;
-      q.emplace(target.y, target.x + 1);
-      q.emplace(target.y, target.x - 1);
-      q.emplace(target.y + 1, target.x);
-      q.emplace(target.y - 1, target.x);
-      break;
+    makeGroup(newGroup, map, i + 1, j, N, M);
+    makeGroup(newGroup, map, i - 1, j, N, M);
+    makeGroup(newGroup, map, i, j + 1, N, M);
+    makeGroup(newGroup, map, i, j - 1, N, M);
+  } else if (map[i][j] == 0) {
+    newGroup.toCover.emplace(i, j);
+  }
+}
 
-    case 0:
-      newGroup.toCover.emplace(target);
-      if (newGroup.toCover.size() > 2)
-        return false;
-      break;
+pair<vector<group>, vector<group> > getGroups(int**map, int N, int M)
+{
+  vector<group> ones;
+  vector<group> twos;
+  
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < M; j++) {
+      if (map[i][j] == 2) {
+        group newGroup;
+        makeGroup(newGroup, map, i, j, N, M);
+        if (newGroup.toCover.size() == 1) {
+          ones.emplace_back(newGroup);
+        } else if (newGroup.toCover.size() == 2) {
+          twos.emplace_back(newGroup);
+        }
+      }
     }
   }
 
-  return worthy;
+  return {ones, twos};
 }
 
-void getGroups(vector<Group>& groups, int N, int M, vector<vector<int> >& map)
+int** makeMap(int N, int M)
+{
+  int** map = (int**) malloc(sizeof(int*) * N);;
+  for (int i = 0; i < N; i++) 
+    map[i] = (int*) malloc(sizeof(int) * M);
+
+  return map;
+}
+
+void checkOnes(int** scores, int& maxNum, int N, int M)
+{
+  vector<int> nums;
+  for (int i = 0; i < N; i++)
+    for (int j = 0; j < M; j++)
+      if (scores[i][j] != 0)
+        nums.push_back(scores[i][j]);
+
+  sort(nums.begin(), nums.end(), greater<int>());
+  if (nums.size() == 0)
+    return;
+  if (nums.size() == 1)
+    maxNum = max(maxNum, nums[0]);
+  else
+    maxNum = max(maxNum, nums[0] + nums[1]);
+}
+
+void checkTwos(int** scores, const vector<group>& twos, int& maxNum)
+{
+  set<yx> toCoverTotal;
+  map<yx, vector<int>> toConsider;
+
+  int n = twos.size();
+  vector<int> numLefts(n);
+  fill(numLefts.begin(), numLefts.end(), 2);
+
+  for (int i = 0; i < n; i++) {
+    const group& g = twos[i];
+    
+    for (const yx& loc: g.toCover) 
+      toConsider[loc].push_back(i);
+  }
+
+  for (const group& g: twos) {
+    int num = 0;
+    for (const yx& loc: g.toCover) {
+      for (int i: toConsider[loc]) {
+        numLefts[i]--;
+        if (numLefts[i] == 0)
+          num += twos[i].numStones;
+      }
+
+      num += scores[loc.y][loc.x];
+    }
+
+    for (const yx& loc: g.toCover) {
+      for (int i: toConsider[loc]) 
+        numLefts[i]++;
+    }
+
+    maxNum = max(maxNum, num);
+  }
+}
+
+void spreadOnes(int** scores, const vector<group>& ones, int N, int M)
 {
   for (int i = 0; i < N; i++) 
     for (int j = 0; j < M; j++) 
-      if (map[i][j] == 2) {
-        groups.emplace_back();
-        if (!bfs(map, N, M, i, j, groups[groups.size() - 1]))
-          groups.pop_back();
-      }
+      scores[i][j] = 0;
+
+  for (const group& g: ones) 
+    for (const yx& loc: g.toCover) 
+      scores[loc.y][loc.x] += g.numStones;
 }
 
-int solve(int N, int M, vector<vector<int> >& map)
+int solve(int** map, int N, int M)
 {
-  vector<Group> opponentGroups;
-  getGroups(opponentGroups, N, M, map);
+  pair<vector<group>, vector<group> > groups = getGroups(map, N, M);
 
-  sort(opponentGroups.begin(), opponentGroups.end());
+  vector<group>& ones = groups.first;
+  vector<group>& twos = groups.second;
+
+  int** scores = makeMap(N, M);
+  spreadOnes(scores, ones, N, M);
   
-  int n = opponentGroups.size();
-  int toCoverLeft[n];
-  for (int i = 0; i < n; i++)
-    toCoverLeft[i] = opponentGroups[i].toCover.size();
+  int maxNum = 0;
 
-  vector<int> table[N][M];
-  set<yx> totalToCovers;
+  checkOnes(scores, maxNum, N, M);
+  checkTwos(scores, twos, maxNum);
 
-  for (int i = 0; i < n; i++) 
-    for (auto hole: opponentGroups[i].toCover) {
-      table[hole.y][hole.x].push_back(i);
-      totalToCovers.emplace(hole);
-    }
-  
-  vector<yx> locs;
-  for (auto a: totalToCovers)
-    locs.emplace_back(a);
-
-  int T = locs.size();
-  int maxSum = 0;
-  if (T < 2) {
-    if (T == 1) {
-      yx loc = locs[0];
-
-      int sum = 0;
-      for (auto a: table[loc.y][loc.x])
-        sum += opponentGroups[a].numStones;
-      
-      return sum;
-    } else //if (T == 0) 
-      return 0;
-  } else {
-    int scores[N][M] = {0,};
-    for (int i = 0; i < N; i++)
-      for (int j = 0 ;j < M; j++)
-        scores[i][j] = 0;
-    int i = 0;
-    for (; i < n; i++) {
-      int sum = 0;
-      if (opponentGroups[i].toCover.size() == 2) {
-        for (const yx& loc: opponentGroups[i].toCover) {
-          for (int i: table[loc.y][loc.x]) {
-            toCoverLeft[i]--;
-            if (toCoverLeft[i] == 0)
-              sum += opponentGroups[i].numStones;
-          }
-        }
-        maxSum = max(maxSum, sum);
-
-        for (const yx& loc: opponentGroups[i].toCover) 
-          for (int i: table[loc.y][loc.x]) 
-            toCoverLeft[i]++;
-      } else { // == 1
-        break;
-      }
-    }
-
-    for (int j = i; j < n; j++) {
-      for (const yx& loc: opponentGroups[j].toCover) {
-        scores[loc.y][loc.x] += opponentGroups[j].numStones;
-      }
-    }
-
-    vector<int> tempScores;
-
-    for (int i = 0; i < N; i++)
-      for (int j = 0; j < M; j++)
-        if (scores[i][j] != 0)
-          tempScores.push_back(scores[i][j]);
-
-    sort(tempScores.begin(), tempScores.end());
-
-    if (tempScores.size() > 1) 
-      maxSum = max(maxSum, tempScores[tempScores.size() - 1] + tempScores[tempScores.size() - 2]);
-    else if (tempScores.size())
-      maxSum = max(maxSum, tempScores[tempScores.size() - 1]);
-  }
-
-  return maxSum;
+  return maxNum;
 }
 
 int main()
 {
   ios::sync_with_stdio(false);
   cin.tie(NULL);
-
+  
   int N, M;
   cin >> N >> M;
 
-  vector<vector<int> > map;
-  map.resize(N);
-  for (auto& vi: map)
-    vi.resize(M);
+  int** map = makeMap(N, M);
 
-  for (int i = 0; i < N; i++)
-    for (int j = 0; j < M; j++)
+  for (int i = 0; i < N; i++) 
+    for (int j = 0; j < M; j++) 
       cin >> map[i][j];
 
-  cout << solve(N, M, map) << endl;
+  cout << solve(map, N, M) << '\n';
   return 0;
 }
-  
